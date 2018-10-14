@@ -3,7 +3,6 @@ from redis import StrictRedis
 
 class Config(object):
     """项目的配置"""
-    DEBUG = True
     SECRET_KEY = "7S04rmpWCcwlK4zPwDH1hScf876FASCAqXpxmLj/E8hoaUQpcCEJ1M0bbCBlClF1"
 
     # 为数据库添加配置
@@ -25,3 +24,23 @@ class Config(object):
     SESSION_PERMANENT = False
     # 设置过期时间
     PERMANENT_SESSION_LIFETIME = 86400 * 2
+
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    DEBUG = False
+
+
+class TestingConfig(Config):
+    DEBUG = True
+    TESTING = True
+
+
+config = {
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "testing": TestingConfig
+}
