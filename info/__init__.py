@@ -8,6 +8,7 @@ from redis import StrictRedis
 # 可以用来指定Session保存的位置
 from flask_session import Session
 from config import config
+from info.modules.index import index_blue
 
 # 初始化数据库
 db = SQLAlchemy()
@@ -41,5 +42,8 @@ def create_app(config_name):
     CSRFProtect(app)
     # 设置session保存位置
     Session(app)
+
+    # 注册蓝图
+    app.register_blueprint(index_blue)
 
     return app
