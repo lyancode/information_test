@@ -12,6 +12,53 @@ from . import passport_blue
 from info.utils.captcha.captcha import captcha
 
 
+@passport_blue.route("/login", methods=['POST'])
+def login():
+    """
+    登录
+    1、获取参数
+    2、校验参数
+    3、校验密码是否正确
+    4、保存用户的登录状态
+    5、响应
+    :return:
+    """
+    # 1、获取参数
+    params_dict = request.json
+    mobile = params_dict.get("mobile")
+    passowrd = params_dict.get("password")
+
+    # 2、校验参数
+    if not all([mobile, passowrd]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    # 判断手机号是否正确
+    if not re.match('1[35678]\\d{9}', mobile):
+        return jsonify(errno=RET.PARAMERR, errmsg="手机号格式错误")
+
+    # 3、校验密码是否正确
+    # 先查询是否有指定手机号的用户
+    try:
+        user = User.query.filter(User.mobile == mobile).first()
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据查询错误")
+    # 判断用户是否存在
+    if not user:
+        return jsonify(errno=RET.NODATA, errmsg="用户不存在")
+    # 校验登录的密码和当前用户的密码是否一致
+    if not user.check_passowrd(passowrd):
+        return jsonify(errno=RET.PWDERR, errmsg="用户名或者密码错误")
+
+    # 4、保存用户的登录状态
+    session["user_if"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
+
+    # 5、响应
+    return jsonify(errno=RET.OK, errmsg="登录成功")
+
+
 @passport_blue.route('/register', methods=['POST'])
 def register():
     """
@@ -65,19 +112,19 @@ def register():
     # 需求：在设置password的时候，对password进行加密，并将加密结果赋值给user.password_hash
     user.password = passowrd
 
-    # # 6、将User模型添加到数据库
-    # try:
-    #     db.session.add(user)
-    #     db.session.commit()
-    # except Exception as e:
-    #     current_app.logger.error(e)
-    #     db.session.rollback()
-    #     return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
-    #
-    # # 往session中保存数据
-    # session["user_if"] = user.id
-    # session["mobile"] = user.mobile
-    # session["nick_name"] = user.nick_name
+    # 6、将User模型添加到数据库
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+
+    # 往session中保存数据
+    session["user_if"] = user.id
+    session["mobile"] = user.mobile
+    session["nick_name"] = user.nick_name
 
     # 7、返回响应
     return jsonify(errno=RET.OK, errmsg="注册成功")
