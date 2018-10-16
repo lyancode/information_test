@@ -11,6 +11,8 @@ from flask_session import Session
 from config import config
 
 # 初始化数据库
+from info.utils.common import do_index_class
+
 db = SQLAlchemy()
 
 redis_store = None  # type: StrictRedis
@@ -49,6 +51,9 @@ def create_app(config_name):
     CSRFProtect(app)
     # 设置session保存位置
     Session(app)
+
+    # 添加自定义过滤器
+    app.add_template_filter(do_index_class, "index_class")
 
 
     @app.after_request
