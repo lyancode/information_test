@@ -114,6 +114,31 @@ $(function () {
         }
 
         // 发起登录请求
+        var params = {
+            "mobile" : mobile,
+            "password" : password,
+        }
+
+        $.ajax({
+            url:"/passport/login",
+            type:"post",
+            contentType:"application/json",
+            data:JSON.stringify(params),
+            success:function (resp) {
+                if (resp.errno == "0"){
+                    // 注册成功
+                    // 刷新当前界面
+                    location.reload()
+                }else {
+                    // 注册失败
+                    // alert(resp.errmsg);
+                    $("#login-password-err").html(resp.errmsg);
+                    $("#login-password-err").show();
+                }
+            }
+        })
+
+
     })
 
 
@@ -167,6 +192,7 @@ $(function () {
                     location.reload()
                 }else {
                     // 注册失败
+                    alert(resp.errmsg);
                     $("#register-password-err").html(resp.errmsg);
                     $("#register-password-err").show()
                 }
