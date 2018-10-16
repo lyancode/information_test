@@ -51,7 +51,7 @@ def login():
         return jsonify(errno=RET.PWDERR, errmsg="用户名或者密码错误")
 
     # 4、保存用户的登录状态
-    session["user_if"] = user.id
+    session["user_id"] = user.id
     session["mobile"] = user.mobile
     session["nick_name"] = user.nick_name
 
