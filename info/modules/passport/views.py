@@ -24,6 +24,7 @@ def send_sms_code():
     8、告知发送结果
     :return:
     """
+
     # 1、获取参数：手机号，图片验证码内容，图片验证码编号（随机值）
     params_dict = request.json
     mobile = params_dict.get("mobile")
@@ -40,7 +41,7 @@ def send_sms_code():
 
     # 3、从redis中取出真实的验证码内容
     try:
-        real_image_code = redis_store.get("ImageCodeId_" + image_code_id)
+        real_image_code = redis_store.get("imageCodeId_" + image_code_id)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg="数据查询错误")
@@ -59,7 +60,7 @@ def send_sms_code():
     current_app.logger.debug("短信验证码内容是: %s" % sms_code_str)
 
     # 6、发送短信验证码
-    result = CCP().send_template_sms(mobile, [sms_code_str, constants.SMS_CODE_REDIS_EXPIRES])
+    result = CCP().send_template_sms(mobile, [sms_code_str, constants.SMS_CODE_REDIS_EXPIRES], 1)
     if result != 0:
         # 代表发送不成功
         return jsonify(errno=RET.THIRDERR, errmsg="发送短信失败")
