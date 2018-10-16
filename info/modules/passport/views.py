@@ -29,7 +29,7 @@ def register():
     params_dict = request.json
     mobile = params_dict.get("mobile")
     smscode = params_dict.get("smscode")
-    passowrd = params_dict.get("passowrd")
+    passowrd = params_dict.get("password")
 
     # 2、校验参数
     if not all([mobile, smscode, passowrd]):
@@ -63,19 +63,19 @@ def register():
 
     # TODO 对密码进行加密处理
 
-    # 6、将User模型添加到数据库
-    try:
-        db.session.add(user)
-        db.session.commit()
-    except Exception as e:
-        current_app.logger.error(e)
-        db.session.rollback()
-        return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
-
-    # 往session中保存数据
-    session["user_if"] = user.id
-    session["mobile"] = user.mobile
-    session["nick_name"] = user.nick_name
+    # # 6、将User模型添加到数据库
+    # try:
+    #     db.session.add(user)
+    #     db.session.commit()
+    # except Exception as e:
+    #     current_app.logger.error(e)
+    #     db.session.rollback()
+    #     return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+    #
+    # # 往session中保存数据
+    # session["user_if"] = user.id
+    # session["mobile"] = user.mobile
+    # session["nick_name"] = user.nick_name
 
     # 7、返回响应
     return jsonify(errno=RET.OK, errmsg="注册成功")
@@ -130,11 +130,11 @@ def send_sms_code():
     sms_code_str = "%06d" % random.randint(0, 999999)
     current_app.logger.debug("短信验证码内容是: %s" % sms_code_str)
 
-    # 6、发送短信验证码
-    result = CCP().send_template_sms(mobile, [sms_code_str, constants.SMS_CODE_REDIS_EXPIRES], 1)
-    if result != 0:
-        # 代表发送不成功
-        return jsonify(errno=RET.THIRDERR, errmsg="发送短信失败")
+    # # 6、发送短信验证码
+    # result = CCP().send_template_sms(mobile, [sms_code_str, constants.SMS_CODE_REDIS_EXPIRES], 1)
+    # if result != 0:
+    #     # 代表发送不成功
+    #     return jsonify(errno=RET.THIRDERR, errmsg="发送短信失败")
 
     # 7、保存短信验证码的内容到redis上
     try:
@@ -168,6 +168,7 @@ def get_image_code():
 
     # 3、生成图片验证码
     name, text, image = captcha.generate_captcha()
+    current_app.logger.debug(text)
 
     # 4、保存图片验证码文字内容到redis
     try:
