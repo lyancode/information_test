@@ -31,7 +31,6 @@ def news_detail(news_id):
     for news in news_list:
         news_dict_li.append(news.to_basic_dict())
 
-
     # 查询新闻数据
     news = None
 
@@ -48,13 +47,16 @@ def news_detail(news_id):
     news.clicks += 1
 
     is_collected = False
-
+    if user:
+        # 判断用户是否收藏当前新闻
+        if news in user.collection_news:
+            is_collected = True
 
     data = {
         "user": user.to_dict() if user else None,
         "news_dict_li": news_dict_li,
-        "news":news.to_dict(),
-        "is_collected":is_collected
+        "news": news.to_dict(),
+        "is_collected": is_collected
     }
 
     return render_template('news/detail.html', data=data)
