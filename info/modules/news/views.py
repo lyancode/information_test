@@ -60,7 +60,8 @@ def comment_like():
         comment_like_model = CommentLike.query.filter(CommentLike.user_id == user.id,
                                                       CommentLike.comment_id == comment.id).first()
         if comment_like_model:
-            comment_like_model.delete()
+            db.session.delete(comment_like_model)
+
     try:
         db.session.commit()
     except Exception as e:
