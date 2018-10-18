@@ -46,7 +46,7 @@ def collect_news():
         return jsonify(errno=RET.DBERR, errmsg="数据查询错误")
 
     if not news:
-        return jsonify(errno=RET.NODATA, errmsg="为查询到新闻数据")
+        return jsonify(errno=RET.NODATA, errmsg="未查询到新闻数据")
 
     # 4、收藏及取消收藏
     if action == "cancel_collect":
@@ -55,7 +55,7 @@ def collect_news():
             user.collection_news.remove(news)
     else:
         # 收藏
-        if news in user.collection_news:
+        if news not in user.collection_news:
             user.collection_news.append(news)
 
     return jsonify(errno=RET.OK, errmsg="操作成功")
