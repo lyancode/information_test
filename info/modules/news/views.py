@@ -25,7 +25,7 @@ def comment_news():
     parent_id = request.json.get("parent_id")
 
     # 2、判断参数
-    if not all([news_id, comment_content, parent_id]):
+    if not all([news_id, comment_content]):
         return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
 
     try:
@@ -63,7 +63,7 @@ def comment_news():
         current_app.logger.error(e)
         db.rollback()
 
-    return jsonify(errno=RET.OK, errmsg="OK", comment=comment.to_dict())
+    return jsonify(errno=RET.OK, errmsg="OK", data=comment.to_dict())
 
 
 @news_blue.route('/news_collect', methods=['POST'])
