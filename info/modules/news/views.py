@@ -1,10 +1,74 @@
 from flask import render_template, current_app, session, g, abort, jsonify, request
 
 from info import constants, db
-from info.models import News, User, Comment
+from info.models import News, User, Comment, CommentLike
 from info.modules.news import news_blue
 from info.utils.common import user_login_data
 from info.utils.response_code import RET
+
+
+@news_blue.route('/comment_like', methods=['POST'])
+@user_login_data
+def comment_like():
+    """
+    点赞评论
+    :return:
+    """
+    user = g.user
+    if not user:
+        return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
+
+    # 1、接收参数
+    comment_id = request.json.get("comment_id")
+    news_id = request.json.get("news_id")
+    action = request.json.get("action")
+
+    if not all([comment_id, news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    if action not in ["add", "remove"]:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    try:
+        news_id = int(news_id)
+        comment_id = int(comment_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    try:
+        comment = Comment.query.get(comment_id)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据查询错误")
+
+    if not comment:
+        return jsonify(errno=RET.NODATA, errmsg="评论不存在")
+
+    if action == "add":
+        # 点赞评论
+        comment_like_model = CommentLike.query.filter(CommentLike.user_id == user.id,
+                                                      CommentLike.comment_id == comment.id).first()
+        if not comment_like_model:
+            comment_like_model = CommentLike()
+            comment_like_model.user_id = user.id
+            comment_like_model.comment_id = comment.id
+            db.session.add(comment_like_model)
+
+    else:
+        # 取消点赞评论
+        comment_like_model = CommentLike.query.filter(CommentLike.user_id == user.id,
+                                                      CommentLike.comment_id == comment.id).first()
+        if comment_like_model:
+            comment_like_model.delete()
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg="数据库操作失败")
+
+    return jsonify(errno=RET.OK, errmsg="OK")
 
 
 @news_blue.route('/news_comment', methods=['POST'])
@@ -26,7 +90,7 @@ def comment_news():
 
     # 2、判断参数
     if not all([news_id, comment_content]):
-        return jsonify(errno=RET.SESSIONERR, errmsg="用户未登录")
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
 
     try:
         news_id = int(news_id)
@@ -185,7 +249,7 @@ def news_detail(news_id):
         "news_dict_li": news_dict_li,
         "news": news.to_dict(),
         "is_collected": is_collected,
-        "comments":comment_dict_li
+        "comments": comment_dict_li
     }
 
     return render_template('news/detail.html', data=data)
