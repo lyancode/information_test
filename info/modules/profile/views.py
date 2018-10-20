@@ -1,31 +1,81 @@
 from flask import render_template, g, redirect, request, jsonify, current_app
 from sqlalchemy.sql.functions import user
 
-from info import constants
-from info.models import Category
+from info import constants, db
+from info.models import Category, News
 from info.modules.profile import profile_blue
 from info.utils.common import user_login_data
 from info.utils.image_storage import storage
 from info.utils.response_code import RET
 
 
-@profile_blue.route('/news_release')
+@profile_blue.route('/news_release', methods=['POST', 'GET'])
+@user_login_data
 def news_release():
-    # 加载新闻分类数据
-    categories = []
+
+    if request.method == 'GET':
+        # 加载新闻分类数据
+        categories = []
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+        category_dict_li = []
+        for category in categories:
+            category_dict_li.append(category.to_dict())
+        # 移除新闻分类中的最新
+        category_dict_li.pop(0)
+        return render_template('news/user_news_release.html', data={"categories": category_dict_li})
+
+    # 1. 获取要提交的数据
+    title = request.form.get("title")
+    source = "个人发布"
+    digest = request.form.get("digest")
+    content = request.form.get("content")
+    index_image = request.files.get("index_image")
+    category_id = request.form.get("category_id")
+
+    # 2.1 判断数据是否有值
+    if not all([title, source, digest, content, index_image, category_id]):
+        return jsonify(errno=RET.PARAMERR, errmsg="参数有误")
+
+    # 2.2
     try:
-        categories = Category.query.all()
+        category_id = int(category_id)
     except Exception as e:
         current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
 
-    category_dict_li = []
-    for category in categories:
-        category_dict_li.append(category.to_dict())
+    # 3、取到图片，将图片上传到七牛云
+    try:
+        index_image_data = index_image.read()
+        key = storage(index_image_data)
+    except Exception as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
 
-    # 移除新闻分类中的最新
-    category_dict_li.pop(0)
+    # 初始化新闻模型，并设置相关数据
+    news = News()
+    news.title = title
+    news.digest = digest
+    news.source = source
+    news.content = content
+    news.index_image_url = constants.QINIU_DOMIN_PREFIX + key
+    # news.index_image_url = 'dhdhdhdhdhdhajdghjkadkhjag'
+    news.category_id = category_id
+    news.user_id = g.user.id
+    # 1代表待审核状态
+    news.status = 1
 
-    return render_template('news/user_news_release.html', data={"categories": category_dict_li})
+    try:
+        db.session.add(news)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.error(e)
+        db.session.rollback()
+        return jsonify(errno=RET.DBERR, errmsg="数据保存失败")
+
+    return jsonify(errno=RET.OK, errmsg="OK")
 
 
 @profile_blue.route('/collection')
