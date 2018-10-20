@@ -84,4 +84,7 @@ def create_app(config_name):
     from info.modules.profile import profile_blue
     app.register_blueprint(profile_blue)
 
+    from info.modules.admin import admin_blue
+    app.register_blueprint(admin_blue, url_prefix='/admin')
+
     return app
