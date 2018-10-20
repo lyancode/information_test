@@ -1,8 +1,16 @@
-from flask import render_template, g, redirect
+from flask import render_template, g, redirect, request
 from sqlalchemy.sql.functions import user
 
 from info.modules.profile import profile_blue
 from info.utils.common import user_login_data
+
+
+@profile_blue.route('/base_info', methods=['POST', 'GET'])
+@user_login_data
+def base_info():
+    # 不同的请求方式，做不同的事情
+    if request.method == "GET":
+        return render_template('news/user_base_info.html', data={"user": g.user.to_dict()})
 
 
 @profile_blue.route('/info')
