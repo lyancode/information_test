@@ -33,7 +33,7 @@ def pic_info():
 
     # 3、保存头像地址
     user.avatar_url = key
-    return jsonify(errno=RET.OK, errmsg="OK", avatar_url=constants.QINIU_DOMIN_PREFIX+key)
+    return jsonify(errno=RET.OK, errmsg="OK", data={"avatar_url": constants.QINIU_DOMIN_PREFIX+key})
 
 
 @profile_blue.route('/base_info', methods=['POST', 'GET'])
