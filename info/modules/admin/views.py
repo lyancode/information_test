@@ -1,13 +1,16 @@
-from flask import render_template, request, jsonify, current_app, session, redirect, url_for
+from flask import render_template, request, jsonify, current_app, session, redirect, url_for, g
 
 from info.models import User
 from info.modules.admin import admin_blue
+from info.utils.common import user_login_data
 from info.utils.response_code import RET
 
 
 @admin_blue.route('/index')
+@user_login_data
 def index():
-    return render_template('admin/index.html')
+    user = g.user
+    return render_template('admin/index.html', user=user.to_dict())
 
 
 @admin_blue.route('/login', methods=["GET", "POST"])
