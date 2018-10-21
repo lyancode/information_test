@@ -10,6 +10,24 @@ from info.utils.common import user_login_data
 from info.utils.response_code import RET
 
 
+@admin_blue.route('/news_review_detail/<int:news_id>')
+def new_review_detail(news_id):
+
+    # 通过id查询新闻
+    news = None
+    try:
+        news = News.query.get(news_id)
+    except Exception as e:
+        current_app.logger.error(e)
+
+    if not news:
+        return render_template('admin/news_review_detail.html', data={"errmsg": "未查询到此新闻"})
+
+    # 返回数据
+    data = {"news": news.to_dict()}
+    return render_template('admin/news_review_detail.html', data=data)
+
+
 @admin_blue.route('/news_review')
 def news_review():
     page = request.args.get("p", 1)
