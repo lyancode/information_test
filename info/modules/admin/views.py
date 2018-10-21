@@ -10,10 +10,14 @@ def index():
     return render_template('admin/index.html')
 
 
-
 @admin_blue.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "GET":
+        # 判断当前是否登录，如果已经登录则重定向到管理员后台主页
+        user_id = session.get("user_id", None)
+        is_admin = session.get("is_admin", None)
+        if user_id and is_admin:
+            return redirect(url_for('admin.index'))
         return render_template('admin/login.html')
 
     # 取到登录的参数
@@ -22,7 +26,6 @@ def login():
 
     # 判断参数
     if not all([username, password]):
-        # return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
         return render_template('admin/login.html', errmsg="参数错误")
 
     # 查询当前用户
