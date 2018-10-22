@@ -11,28 +11,56 @@ from info.utils.image_storage import storage
 from info.utils.response_code import RET
 
 
-@admin_blue.route('/news_type')
+@admin_blue.route('/news_type', methods=["GET", "POST"])
 def news_type():
-    # 查询分类数据
-    try:
-        categories = Category.query.all()
-    except Exception as e:
-        current_app.logger.error(e)
-        return render_template('admin/news_type.html', errmsg="数据查询错误")
+    if request.method == "GET":
+        # 查询分类数据
+        try:
+            categories = Category.query.all()
+        except Exception as e:
+            current_app.logger.error(e)
+            return render_template('admin/news_type.html', errmsg="数据查询错误")
 
-    category_dict_li = []
-    for category in categories:
-        # 取到分类的字典
-        cate_dict = category.to_dict()
-        category_dict_li.append(category.to_dict())
+        category_dict_li = []
+        for category in categories:
+            # 取到分类的字典
+            cate_dict = category.to_dict()
+            category_dict_li.append(category.to_dict())
 
-    category_dict_li.pop(0)
+        category_dict_li.pop(0)
 
-    data = {
-        "categories": category_dict_li
-    }
+        data = {
+            "categories": category_dict_li
+        }
 
-    return render_template('admin/news_type.html', data=data)
+        return render_template('admin/news_type.html', data=data)
+
+    # 新增或者修改分类
+    # 1、取参数
+    cname = request.json.get("name")
+    # 如果传入cid，代表是编辑已存在的分类
+    cid = request.json.get("id")
+
+    if not cname:
+        return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+    if cid:
+        try:
+            cid = int(cid)
+            category = Category.query.get(cid)
+        except Exception as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.PARAMERR, errmsg="参数错误")
+
+        if not category:
+            return jsonify(errno=RET.NODATA, errmsg="未查询到分类数据")
+        category.name = cname
+    else:
+        category = Category()
+        category.name = cname
+        db.session.add(category)
+
+    return jsonify(errno=RET.OK, errmsg="OK")
 
 
 @admin_blue.route('/news_edit_detail', methods=["GET", "POST"])
