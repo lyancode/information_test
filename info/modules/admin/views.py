@@ -11,6 +11,30 @@ from info.utils.image_storage import storage
 from info.utils.response_code import RET
 
 
+@admin_blue.route('/news_type')
+def news_type():
+    # 查询分类数据
+    try:
+        categories = Category.query.all()
+    except Exception as e:
+        current_app.logger.error(e)
+        return render_template('admin/news_type.html', errmsg="数据查询错误")
+
+    category_dict_li = []
+    for category in categories:
+        # 取到分类的字典
+        cate_dict = category.to_dict()
+        category_dict_li.append(category.to_dict())
+
+    category_dict_li.pop(0)
+
+    data = {
+        "categories": category_dict_li
+    }
+
+    return render_template('admin/news_type.html', data=data)
+
+
 @admin_blue.route('/news_edit_detail', methods=["GET", "POST"])
 def news_edit_detail():
     # 查询点击的新闻的相关数据并传入到模板中
