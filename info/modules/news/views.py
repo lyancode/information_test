@@ -263,11 +263,18 @@ def news_detail(news_id):
             comment_dict["is_like"] = True
         comment_dict_li.append(comment_dict)
 
+    id_followed = False
+    # if 当年新闻有作者 并且 当前登录用户一斤关注过这个用户
+    if news.user and user:
+        if news.user in user.followed:
+            id_followed = True
+
     data = {
         "user": user.to_dict() if user else None,
         "news_dict_li": news_dict_li,
         "news": news.to_dict(),
         "is_collected": is_collected,
+        "id_followed":id_followed,
         "comments": comment_dict_li
     }
 
