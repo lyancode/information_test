@@ -41,6 +41,7 @@ $(function () {
                     // 更新父窗口内容
                     $('.user_center_name', parent.document).html(params['nick_name'])
                     $('#nick_name', parent.document).html(params['nick_name'])
+                    // $('.gender', parent.document).html(params['gender'])
                     $('.input_sub').blur()
                 }else {
                     alert(resp.errmsg)
