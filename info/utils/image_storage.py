@@ -1,8 +1,8 @@
 from qiniu import Auth, put_data
 
-access_key = "yV4GmNBLOgQK-1Sn3o4jktGLFdFSrlywR2C-hvsW"
-secret_key = "bixMURPL6tHjrb8QKVg2tm7n9k8C7vaOeQ4MEoeW"
-bucket_name = "ihome"
+access_key = "X78oHPbfASfWQ8gzVzwDeRd2a1mKEMUefYBgKCVI"
+secret_key = "kxDYcWZcJKBsRbxWkVcyfWTbvllCjOvMQ81YYFTp"
+bucket_name = "py-04-yun"
 
 
 def storage(data):
