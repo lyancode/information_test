@@ -17,13 +17,16 @@
                 <li>
                 {% if news.status == 0 %}
                     {# 审核通过 #}
-                    <a href="/news/{{ news.id }}">{{ news.title }}</a><em class="pass">已通过</em><span>{{ news.create_time }}</span>
+                    {# 审核通过的，点击回去新闻详情页，因内容在框架中，故要使用顶层顶层窗口来进行跳转 #}
+                    <a href="javascript:$(function(){
+                    window.top.location.href='/news/{{ news.id }}'
+                });">{{ news.title }}</a><em class="pass">已通过</em><span>{{ news.create_time }}</span>
                 {% elif news.status == 1 %}
                     {# 审核中 #}
-                    <a href="javascript:;">{{ news.title }}</a><em class="review">审核中</em><span>{{ news.create_time }}</span>
+                    <a href="javascript:$(function() { alert('正在审核中,请耐心等待!') });">{{ news.title }}</a><em class="review">审核中</em><span>{{ news.create_time }}</span>
                 {% else %}
                     {# 审核不通过 #}
-                    <a href="javascript:;">{{ news.title }}</a><em class="nopass">未通过</em><span>{{ news.create_time }}</span>
+                    <a href="javascript:$(function() { alert('审核未通过，请与管理员联系！') });">{{ news.title }}</a><em class="nopass">未通过</em><span>{{ news.create_time }}</span>
                     <b>未通过原因：{{ news.reason }}</b>
                 {% endif %}
                 </li>

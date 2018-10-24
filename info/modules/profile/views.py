@@ -123,7 +123,7 @@ def user_follow():
     return render_template('news/user_follow.html', data=data)
 
 
-@profile_blue.route('/news_release')
+@profile_blue.route('/news_list')
 @user_login_data
 def user_news_list():
     page = request.args.get("p", 1)
